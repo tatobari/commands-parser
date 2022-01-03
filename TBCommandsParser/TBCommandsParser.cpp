@@ -115,7 +115,16 @@ namespace TBCommandsParser {
     unsigned int argumentsCount = 1u;
     
     while (*argsPtr != 0x00){
+      
+      if (*argsPtr == TBCH_STRING_DELIMITER){
+        argsPtr++;
+        while( *argsPtr != TBCH_STRING_DELIMITER && (*argsPtr != 0x00) ){
+          argsPtr++;
+        }
+      };
+
       if (*argsPtr == TBCH_ARGUMENT_SEPARATOR) argumentsCount++;
+      if (*argsPtr == 0x00) continue;
       argsPtr++;
     };
 
@@ -193,6 +202,16 @@ namespace TBCommandsParser {
 
           return argsPtr;
         }
+
+        // If the current argument is a delimited string, then we need to go through it.
+        if (*argsPtr == TBCH_STRING_DELIMITER){
+          argsPtr++;
+          while( *argsPtr != TBCH_STRING_DELIMITER && *argsPtr != 0x00 ){
+            argsPtr++;
+          }
+          if (*argsPtr == 0x00) continue;
+        };
+
       }
       
       // Go to the next character to continue searching for the next TBCH_ARGUMENT_SEPARATOR.
@@ -209,9 +228,15 @@ namespace TBCommandsParser {
     if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
 
     char* argsPtr = bufferArgPtr;
+    char delimiter = TBCH_ARGUMENT_SEPARATOR;
+
+    if(*argsPtr == '"'){
+      delimiter = TBCH_STRING_DELIMITER;
+      argsPtr++;
+    }
     
     // Parse until non-char or argument separator found.
-    while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 && isprint( (int)*argsPtr ) ){
+    while( *argsPtr != delimiter && *argsPtr != 0x00 && isprint( (int)*argsPtr ) ){
       *charArrayArgPtr = *argsPtr;
       charArrayArgPtr++;
       argsPtr++;

@@ -10,10 +10,12 @@
 #define TBCH_INPUT_BUFFER_SIZE 50
 #define TBCH_COMMAND_INITIATOR "SW"
 #define TBCH_ARGUMENT_SEPARATOR ','
+#define TBCH_STRING_DELIMITER '"'
 
 #include <stdio.h>
 #include <ctype.h>
 #include <cstring>
+#include <string.h>
 
 namespace TBCommandsParser {
     

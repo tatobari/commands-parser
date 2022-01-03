@@ -19,3 +19,4 @@ Command examples:
 - `SW+SETSTATE?`
 - `SW+SETSTATE=?`
 - `SW+SETSTATE=ON,-128000,NOW`
+- `SW+SETSTATE=ON,\"slow,then fast\",-12800,NOW`
