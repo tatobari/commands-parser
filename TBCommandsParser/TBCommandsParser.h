@@ -7,7 +7,6 @@
 #ifndef TBCommandsParser_h
 #define TBCommandsParser_h
 
-#define TBCH_INPUT_BUFFER_SIZE 50
 #define TBCH_COMMAND_INITIATOR "SW"
 #define TBCH_ARGUMENT_SEPARATOR ','
 #define TBCH_STRING_DELIMITER '"'
@@ -15,9 +14,16 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <cstring>
-#include <string.h>
 
 namespace TBCommandsParser {
+
+    enum TBArgumentType {
+      nullArg,
+      charArg,
+      charArrayArg,
+      LongArg,
+      UnsignedLongArg
+    };
     
     bool initiatorMatches(char* buffer);
 
@@ -32,6 +38,19 @@ namespace TBCommandsParser {
     unsigned int countArguments(char* buffer);
     char* getArgumentNumberPtr(char* buffer, unsigned int argumentNumber);
 
+    unsigned int getArgumentLength(char* bufferArgPtr);
+
+    bool canBeNullArgType(char* bufferArgPtr);
+    bool canBeCharArgType(char* bufferArgPtr);
+    bool canBeCharArrayArgType(char* bufferArgPtr);
+    bool canBeLongArgType(char* bufferArgPtr);
+    bool canBeFloatArgType(char* bufferArgPtr);
+    bool canBeUnsignedLongArgType(char* bufferArgPtr);
+
+    int inferArgumentType(char* bufferArgPtr);
+    int inferArgumentType(char* buffer, unsigned int argumentNumber);
+
+    bool parseCharArg(char* bufferArgPtr, char* charArgPtr);
     bool parseCharArrayArg(char* bufferArgPtr, char* charArrayArgPtr);
     bool parseLongArg(char* bufferArgPtr, long* longArgPtr);
     bool parseUnsignedLongArg(char* bufferArgPtr, unsigned long* unsignedLongArgPtr);

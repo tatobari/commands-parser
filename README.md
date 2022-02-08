@@ -9,7 +9,7 @@ It currently doesn't have an argument type identifier, but I'll also try to impl
 I made it to use it while working with Arduino and other microcontrollers or embedded systems which I need to control from a comfortable device such as a computer or a smartphone.
 
 ## Build and run the example code.
-1. Run `g++ -o example *.cpp ./TBCommandsParser/*.cpp`.
+1. Run `g++ -std=c++11 -o example *.cpp ./TBCommandsParser/*.cpp`.
 1. On Linux/Mac, run `./example` or `./example [COMMAND]`.
 
 Command examples:
@@ -18,5 +18,5 @@ Command examples:
 - `SW+SETSTATE`
 - `SW+SETSTATE?`
 - `SW+SETSTATE=?`
-- `SW+SETSTATE=ON,-128000,NOW`
-- `SW+SETSTATE=ON,\"slow,then fast\",-12800,NOW`
+- `SW+SETSTATE=A,ON,-128000,NOW`
+- `SW+SETSTATE=A,ON,\"slow,then fast\",-12800,NOW`

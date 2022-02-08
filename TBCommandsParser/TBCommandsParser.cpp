@@ -10,6 +10,8 @@ namespace TBCommandsParser {
 
   bool initiatorMatches(char* buffer){
 
+    if( buffer == NULL ) return false;
+
     // Check if the initiator matches.
     if( strncmp(buffer, TBCH_COMMAND_INITIATOR, (unsigned)strlen(TBCH_COMMAND_INITIATOR)) != 0 ){
       return false;
@@ -19,12 +21,17 @@ namespace TBCommandsParser {
   }
 
   char* goToAfterInitiator(char* buffer){
+
+    if( buffer == NULL ) return NULL;
+
     return buffer + (unsigned)strlen(TBCH_COMMAND_INITIATOR);
   };
 
   bool parseCommand(char* buffer, char* commandCharsPtr){
 
-    char* bufferCommandCharsPtr = goToAfterInitiator(buffer);
+    char* bufferCommandCharsPtr = TBCommandsParser::goToAfterInitiator(buffer);
+
+    if( bufferCommandCharsPtr == NULL ) return false;
 
     if( *bufferCommandCharsPtr == 0x00 || *bufferCommandCharsPtr == '=' || *bufferCommandCharsPtr == '?' ){
       return false;
@@ -41,7 +48,9 @@ namespace TBCommandsParser {
 
   bool isReadCommand(char* buffer){
 
-    char* command = goToAfterInitiator(buffer);
+    char* command = TBCommandsParser::goToAfterInitiator(buffer);
+
+    if( command == NULL ) return false;
 
     char* questionMark = strchr(command,'?');
 
@@ -54,7 +63,7 @@ namespace TBCommandsParser {
 
   bool hasArguments(char* buffer){
 
-    char* command = goToAfterInitiator(buffer);
+    char* command = TBCommandsParser::goToAfterInitiator(buffer);
 
     // If the input has no "=" sign, then the command has no arguments.
     if(strchr(command,'=') == NULL){
@@ -66,7 +75,7 @@ namespace TBCommandsParser {
 
   char* getFirstArgumentPtr(char* buffer){
 
-    char* command = goToAfterInitiator(buffer);
+    char* command = TBCommandsParser::goToAfterInitiator(buffer);
 
     // Find the "=" sign and go to the first character.
     char* argsPtr = strchr(command,'=');
@@ -92,7 +101,7 @@ namespace TBCommandsParser {
 
   bool isTestCommand(char* buffer){
 
-    char* argsPtr = getFirstArgumentPtr(buffer);
+    char* argsPtr = TBCommandsParser::getFirstArgumentPtr(buffer);
 
     if(argsPtr == NULL){
       return NULL;
@@ -105,7 +114,7 @@ namespace TBCommandsParser {
 
   unsigned int countArguments(char* buffer){
 
-    char* argsPtr = getFirstArgumentPtr(buffer);
+    char* argsPtr = TBCommandsParser::getFirstArgumentPtr(buffer);
 
     // If there is no equal sign, then the count is 0 and the pointer is NULL.
     if( argsPtr == NULL ){
@@ -133,10 +142,10 @@ namespace TBCommandsParser {
 
   char* getArgumentNumberPtr(char* buffer, unsigned int argumentNumber){
 
-    char* command = goToAfterInitiator(buffer);
+    char* command = TBCommandsParser::goToAfterInitiator(buffer);
 
     // Check if there is such a number of arguments.
-    if( argumentNumber > countArguments(command)){
+    if( argumentNumber > TBCommandsParser::countArguments(command)){
       return NULL;
     }
 
@@ -184,8 +193,12 @@ namespace TBCommandsParser {
         
         // Go to the argument's first character.
         argsPtr++;
+
+        if (*argsPtr == TBCH_ARGUMENT_SEPARATOR){
+          continue;
+        }
         
-        // If the pointer is null after the TBCH_ARGUMENT_SEPARATOR,
+        // If the this is null character after the TBCH_ARGUMENT_SEPARATOR,
         // then the argument's value is NULL.
         if (*argsPtr == 0x00){
           return NULL;
@@ -194,8 +207,6 @@ namespace TBCommandsParser {
         // If we are at the correct argumentNumber, then we've found it.
         if(argumentsCount == argumentNumber){
 
-          // If the first argument is the one required, then we've found it
-          // and the pointer is in position. No need to run the loop.
           if(*argsPtr == TBCH_ARGUMENT_SEPARATOR){
             return NULL;
           }
@@ -209,7 +220,7 @@ namespace TBCommandsParser {
           while( *argsPtr != TBCH_STRING_DELIMITER && *argsPtr != 0x00 ){
             argsPtr++;
           }
-          if (*argsPtr == 0x00) continue;
+          if (*argsPtr == 0x00) return NULL;
         };
 
       }
@@ -223,20 +234,219 @@ namespace TBCommandsParser {
     return NULL;
   }
 
+  unsigned int getArgumentLength(char* bufferArgPtr){
+
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return 0u;
+
+    char* argsPtr = bufferArgPtr;
+    unsigned int charCount = 0;
+
+    if(*argsPtr == '"'){
+
+      argsPtr++;
+
+      // Parse until string delimiter found.
+      while( *argsPtr != TBCH_STRING_DELIMITER ){
+
+        // It the character is not a printable one or the end of the string
+        // has been reached without finding the end-side delimiter, 
+        // then this isn't a valid string.
+        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+          return charCount;
+        }
+        charCount++;
+        argsPtr++;
+      }
+      return charCount;
+    }
+    
+    // Parse until non-char or argument separator found.
+    while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
+
+      // It the character is not a printable one, then this isn't a valid string.
+      if( !isprint( (int)*argsPtr ) ){
+        return charCount;
+      }
+      charCount++;
+      argsPtr++;
+    }
+
+    return charCount;
+  }
+
+  int getArgumentLength(char* buffer, unsigned int argumentNumber){
+    char* bufferArgPtr = TBCommandsParser::getArgumentNumberPtr(buffer, argumentNumber);
+    return TBCommandsParser::getArgumentLength(bufferArgPtr);
+  }
+
+  bool canBeNullArgType(char* bufferArgPtr){
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return true;
+    return false;
+  }
+
+  bool canBeCharArgType(char* bufferArgPtr){
+
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return false;
+
+    
+    if( *(bufferArgPtr+1) != TBCH_ARGUMENT_SEPARATOR && (bufferArgPtr+1) != NULL ) return false;
+
+    return true;
+  }
+
+  bool canBeCharArrayArgType(char* bufferArgPtr){
+    
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return false;
+
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    char* argsPtr = bufferArgPtr;
+
+    if(*argsPtr == '"'){
+
+      argsPtr++;
+
+      // Parse until string delimiter found.
+      while( *argsPtr != TBCH_STRING_DELIMITER ){
+
+        // It the character is not a printable one or the end of the string
+        // has been reached without finding the end-side delimiter, 
+        // then this isn't a valid string.
+        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+          return false;
+        }
+        argsPtr++;
+      }
+      return true;
+    }
+    
+    // Parse until non-char or argument separator found.
+    while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
+
+      // It the character is not a printable one, then this isn't a valid string.
+      if( !isprint( (int)*argsPtr ) ){
+        return false;
+      }
+      argsPtr++;
+    }
+
+    return true;
+  }
+
+  bool canBeLongArgType(char* bufferArgPtr){
+
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return false;
+
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    char* argsPtr = bufferArgPtr;
+
+    if( *argsPtr == '-' ){
+      argsPtr++;
+    }
+
+    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR || *argsPtr != 0x00){
+      if( !isdigit(*argsPtr) ) return false;
+      argsPtr++;
+    }
+
+    return true;
+  }
+
+  bool canBeFloatArgType(char* bufferArgPtr){
+
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return false;
+
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    char* argsPtr = bufferArgPtr;
+    bool pointFound = false;
+
+    if( *argsPtr == '-' ){
+      argsPtr++;
+    }
+
+    if( *argsPtr == '.' ){
+      pointFound = true;
+      argsPtr++;
+    }
+
+    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR || *argsPtr != 0x00){
+      
+      if( *argsPtr == '.' ){
+        if( !pointFound ) {
+          pointFound = true;
+          argsPtr++;
+          continue;
+        } else {
+          return false;
+        }
+      }
+
+      if( !isdigit(*argsPtr) ) return false;
+      argsPtr++;
+    }
+
+    return true;
+  }
+
+  bool canBeUnsignedLongArgType(char* bufferArgPtr){
+    return true;
+  }
+
+  int inferArgumentType(char* bufferArgPtr){
+    return TBCommandsParser::TBArgumentType::charArg;
+  }
+
+  int inferArgumentType(char* buffer, unsigned int argumentNumber){
+    char* bufferArgPtr = TBCommandsParser::getArgumentNumberPtr(buffer, argumentNumber);
+    return TBCommandsParser::inferArgumentType(bufferArgPtr);
+  }
+
+  bool parseCharArg(char* bufferArgPtr, char* charArgPtr){
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    if( *(bufferArgPtr+1) != TBCH_ARGUMENT_SEPARATOR && (bufferArgPtr+1) != NULL ) return false;
+
+    *charArgPtr = *bufferArgPtr;
+
+    return true;
+  }
+
   bool parseCharArrayArg(char* bufferArgPtr, char* charArrayArgPtr){
 
     if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
 
     char* argsPtr = bufferArgPtr;
-    char delimiter = TBCH_ARGUMENT_SEPARATOR;
 
     if(*argsPtr == '"'){
-      delimiter = TBCH_STRING_DELIMITER;
+
       argsPtr++;
+
+      // Parse until string delimiter found.
+      while( *argsPtr != TBCH_STRING_DELIMITER ){
+
+        // It the character is not a printable one or the end of the string
+        // has been reached without finding the end-side delimiter, 
+        // then this isn't a valid string.
+        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+          return false;
+        }
+        *charArrayArgPtr = *argsPtr;
+        charArrayArgPtr++;
+        argsPtr++;
+      }
+      return true;
     }
     
     // Parse until non-char or argument separator found.
-    while( *argsPtr != delimiter && *argsPtr != 0x00 && isprint( (int)*argsPtr ) ){
+    while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
+
+      // If the character is not a printable one, then this isn't a valid string.
+      if( !isprint( (int)*argsPtr ) ){
+        return false;
+      }
+
       *charArrayArgPtr = *argsPtr;
       charArrayArgPtr++;
       argsPtr++;

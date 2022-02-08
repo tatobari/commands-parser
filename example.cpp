@@ -2,17 +2,21 @@
 #include <string.h>
 #include "TBCommandsParser/TBCommandsParser.h"
 
-char defaultInputText[] = "SW+SETSTATE=ON,\"slow,then fast\",-12800,NOW";
+char defaultInputText[] = "SW+SETSTATE=A,ON,\"slow,then fast\",-12800,,NOW";
 
 int main(int argCount, char** argv)
 {
   char* inputText = defaultInputText;
   
-  if( argCount > 0){
+  if( argCount > 1){
     inputText = argv[1];
   }
+  
+  printf("Examples of how to use the different functions:\n\r\n\r");
 
-  printf("Examples of how to use different functions:\n\r\n\r");
+  printf("COMMAND: %s\n\r\n\r", inputText);
+
+  printf("\n\r## Command evaluation\n\r");
   
   printf("initiatorMatches: %s\n\r", TBCommandsParser::initiatorMatches((char*)inputText) ? "TRUE" : "FALSE");
 
@@ -42,24 +46,84 @@ int main(int argCount, char** argv)
   
   printf("getArgumentNumberPtr: %s\n\r", TBCommandsParser::getArgumentNumberPtr(inputText, 2u));
 
+
+  printf("\n\r## Arguments evaluation\n\r");
+
   char* auxPtr;
+  
+  unsigned int argumentNumber;
 
-  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, 1u);
-  char myCharArgument[10];
-  memset(myCharArgument, 0x00, sizeof(myCharArgument));
-  printf("parseCharArrayArg: %s\n\r", TBCommandsParser::parseCharArrayArg(auxPtr, myCharArgument) ? myCharArgument : NULL);
+  argumentNumber = 1;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("getArgumentLength(%d): %d\n\r", argumentNumber,TBCommandsParser::getArgumentLength(auxPtr));
 
-  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, 2u);
-  char myCharArgument2[10];
-  memset(myCharArgument2, 0x00, sizeof(myCharArgument2));
-  printf("parseCharArrayArg: %s\n\r", TBCommandsParser::parseCharArrayArg(auxPtr, myCharArgument2) ? myCharArgument2 : NULL);
+  argumentNumber = 2;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("getArgumentLength(%d): %d\n\r", argumentNumber, TBCommandsParser::getArgumentLength(auxPtr));
 
-  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, 3u);
+  argumentNumber = 3;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("getArgumentLength(%d): %d\n\r", argumentNumber, TBCommandsParser::getArgumentLength(auxPtr));
+
+  argumentNumber = 5;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("getArgumentLength(%d): %d\n\r", argumentNumber, TBCommandsParser::getArgumentLength(auxPtr));
+
+  argumentNumber = 5;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeNullArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeNullArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 4;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeNullArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeNullArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 1;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeCharArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeCharArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 2;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeCharArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeCharArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 1;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeCharArrayArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeCharArrayArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 2;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeCharArrayArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeCharArrayArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 2;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
+
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(inputText, argumentNumber));
+
+  char myCharArgument;
+  char myCharArrayArgument[50];
   long myLongArgument;
-  printf("parseLongArg: %ld\n\r", TBCommandsParser::parseLongArg(auxPtr, &myLongArgument) ? myLongArgument : NULL);
 
-  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, 4u);
-  char myCharArgument3[10];
-  memset(myCharArgument3, 0x00, sizeof(myCharArgument3));
-  printf("parseCharArrayArg: %s\n\r", TBCommandsParser::parseCharArrayArg(auxPtr, myCharArgument3) ? myCharArgument3 : NULL);
+  argumentNumber = 1;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("parseCharArg(%d): %c\n\r", argumentNumber, TBCommandsParser::parseCharArg(auxPtr, &myCharArgument) ? myCharArgument : ' ');
+
+  argumentNumber = 2;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  memset(myCharArrayArgument, 0x00, sizeof(myCharArrayArgument));
+  printf("parseCharArrayArg(%d): %s\n\r", argumentNumber, TBCommandsParser::parseCharArrayArg(auxPtr, myCharArrayArgument) ? myCharArrayArgument : NULL);
+
+  argumentNumber = 3;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  memset(myCharArrayArgument, 0x00, sizeof(myCharArrayArgument));
+  printf("parseCharArrayArg(%d): %s\n\r", argumentNumber, TBCommandsParser::parseCharArrayArg(auxPtr, myCharArrayArgument) ? myCharArrayArgument : NULL);
+
+  argumentNumber = 4;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("parseLongArg(%d): %ld\n\r", argumentNumber, TBCommandsParser::parseLongArg(auxPtr, &myLongArgument) ? myLongArgument : NULL);
+
+  argumentNumber = 6;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  memset(myCharArrayArgument, 0x00, sizeof(myCharArrayArgument));
+  printf("parseCharArrayArg(%d): %s\n\r", argumentNumber, TBCommandsParser::parseCharArrayArg(auxPtr, myCharArrayArgument) ? myCharArrayArgument : NULL);
+
 }
