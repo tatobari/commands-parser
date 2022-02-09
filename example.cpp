@@ -93,11 +93,34 @@ int main(int argCount, char** argv)
   auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
   printf("canBeCharArrayArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeCharArrayArgType(auxPtr) ? "TRUE" : "FALSE");
 
+  argumentNumber = 4;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("canBeLongArgType(%d): %s\n\r", argumentNumber, TBCommandsParser::canBeLongArgType(auxPtr) ? "TRUE" : "FALSE");
+
+  argumentNumber = 1;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(inputText, argumentNumber));
+
   argumentNumber = 2;
   auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
   printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
 
-  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(inputText, argumentNumber));
+  argumentNumber = 3;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
+
+  argumentNumber = 4;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
+
+  argumentNumber = 5;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
+
+  argumentNumber = 6;
+  auxPtr = TBCommandsParser::getArgumentNumberPtr(inputText, argumentNumber);
+  printf("inferArgumentType(%d): %d\n\r", argumentNumber, TBCommandsParser::inferArgumentType(auxPtr));
 
   char myCharArgument;
   char myCharArrayArgument[50];

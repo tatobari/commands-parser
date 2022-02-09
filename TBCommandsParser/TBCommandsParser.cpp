@@ -251,7 +251,7 @@ namespace TBCommandsParser {
         // It the character is not a printable one or the end of the string
         // has been reached without finding the end-side delimiter, 
         // then this isn't a valid string.
-        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+        if( *argsPtr == 0x00 || !isprint( *argsPtr ) ){
           return charCount;
         }
         charCount++;
@@ -264,7 +264,7 @@ namespace TBCommandsParser {
     while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
 
       // It the character is not a printable one, then this isn't a valid string.
-      if( !isprint( (int)*argsPtr ) ){
+      if( !isprint( *argsPtr ) ){
         return charCount;
       }
       charCount++;
@@ -312,7 +312,7 @@ namespace TBCommandsParser {
         // It the character is not a printable one or the end of the string
         // has been reached without finding the end-side delimiter, 
         // then this isn't a valid string.
-        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+        if( *argsPtr == 0x00 || !isprint( *argsPtr ) ){
           return false;
         }
         argsPtr++;
@@ -324,9 +324,7 @@ namespace TBCommandsParser {
     while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
 
       // It the character is not a printable one, then this isn't a valid string.
-      if( !isprint( (int)*argsPtr ) ){
-        return false;
-      }
+      if( !isprint( *argsPtr ) ) return false;
       argsPtr++;
     }
 
@@ -343,9 +341,28 @@ namespace TBCommandsParser {
 
     if( *argsPtr == '-' ){
       argsPtr++;
+      if(*argsPtr == TBCH_ARGUMENT_SEPARATOR || *argsPtr == 0x00){
+        return false;
+      }
     }
 
-    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR || *argsPtr != 0x00){
+    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00){
+      if( !isdigit(*argsPtr) ) return false;
+      argsPtr++;
+    }
+
+    return true;
+  }
+
+  bool canBeUnsignedLongArgType(char* bufferArgPtr){
+
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ) return false;
+
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    char* argsPtr = bufferArgPtr;
+
+    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00){
       if( !isdigit(*argsPtr) ) return false;
       argsPtr++;
     }
@@ -364,14 +381,21 @@ namespace TBCommandsParser {
 
     if( *argsPtr == '-' ){
       argsPtr++;
+      if(*argsPtr == TBCH_ARGUMENT_SEPARATOR || *argsPtr == 0x00){
+        return false;
+      }
     }
 
     if( *argsPtr == '.' ){
       pointFound = true;
       argsPtr++;
+
+      if(*argsPtr == TBCH_ARGUMENT_SEPARATOR || *argsPtr == 0x00 || !isdigit(*argsPtr)){
+        return false;
+      }
     }
 
-    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR || *argsPtr != 0x00){
+    while(*argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00){
       
       if( *argsPtr == '.' ){
         if( !pointFound ) {
@@ -387,15 +411,60 @@ namespace TBCommandsParser {
       argsPtr++;
     }
 
-    return true;
-  }
+    if( !pointFound ) return false;
 
-  bool canBeUnsignedLongArgType(char* bufferArgPtr){
     return true;
   }
 
   int inferArgumentType(char* bufferArgPtr){
-    return TBCommandsParser::TBArgumentType::charArg;
+
+    // []
+    if( TBCommandsParser::canBeNullArgType(bufferArgPtr) ){
+      return TBCommandsParser::TBArgumentType::nullArg;
+    }
+    
+    // Si tiene al menos un caracter.
+    // [.]*
+    if( TBCommandsParser::canBeCharArrayArgType(bufferArgPtr) ){
+
+      // Si tiene solamente un caracter.
+      // [.]
+      if( TBCommandsParser::canBeCharArgType(bufferArgPtr) ){
+
+        // Si el caracter es un número.
+        // [\d]
+        if( TBCommandsParser::canBeUnsignedLongArgType(bufferArgPtr) ){
+          return TBCommandsParser::TBArgumentType::unsignedLongArg;
+        }
+
+        return TBCommandsParser::TBArgumentType::charArg;
+      }
+
+      // Si tiene más de un caracter.
+
+      // Si es un float.
+      // [\-,\d,\.]
+      if( TBCommandsParser::canBeFloatArgType(bufferArgPtr) ){
+        return TBCommandsParser::TBArgumentType::floatArg;
+      } 
+
+      // Si es número sin punto.
+      // [\-,\d]
+      if( TBCommandsParser::canBeLongArgType(bufferArgPtr) ){
+
+        // Si no tiene signo negativo.
+        // [\d]
+        if( TBCommandsParser::canBeUnsignedLongArgType(bufferArgPtr) ){
+          return TBCommandsParser::TBArgumentType::unsignedLongArg;
+        }
+
+        return TBCommandsParser::TBArgumentType::longArg;
+      };
+
+      return TBCommandsParser::TBArgumentType::charArrayArg;
+    }
+
+    return TBCommandsParser::TBArgumentType::nullArg;
   }
 
   int inferArgumentType(char* buffer, unsigned int argumentNumber){
@@ -429,7 +498,7 @@ namespace TBCommandsParser {
         // It the character is not a printable one or the end of the string
         // has been reached without finding the end-side delimiter, 
         // then this isn't a valid string.
-        if( *argsPtr == 0x00 || !isprint( (int)*argsPtr ) ){
+        if( *argsPtr == 0x00 || !isprint( *argsPtr ) ){
           return false;
         }
         *charArrayArgPtr = *argsPtr;
@@ -443,7 +512,7 @@ namespace TBCommandsParser {
     while( *argsPtr != TBCH_ARGUMENT_SEPARATOR && *argsPtr != 0x00 ){
 
       // If the character is not a printable one, then this isn't a valid string.
-      if( !isprint( (int)*argsPtr ) ){
+      if( !isprint( *argsPtr ) ){
         return false;
       }
 

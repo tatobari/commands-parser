@@ -21,8 +21,9 @@ namespace TBCommandsParser {
       nullArg,
       charArg,
       charArrayArg,
-      LongArg,
-      UnsignedLongArg
+      longArg,
+      unsignedLongArg,
+      floatArg
     };
     
     bool initiatorMatches(char* buffer);
@@ -44,16 +45,17 @@ namespace TBCommandsParser {
     bool canBeCharArgType(char* bufferArgPtr);
     bool canBeCharArrayArgType(char* bufferArgPtr);
     bool canBeLongArgType(char* bufferArgPtr);
-    bool canBeFloatArgType(char* bufferArgPtr);
     bool canBeUnsignedLongArgType(char* bufferArgPtr);
+    bool canBeFloatArgType(char* bufferArgPtr);
 
-    int inferArgumentType(char* bufferArgPtr);
+    int inferArgumentType(char* bufferArgPtr); // PENDING
     int inferArgumentType(char* buffer, unsigned int argumentNumber);
 
     bool parseCharArg(char* bufferArgPtr, char* charArgPtr);
     bool parseCharArrayArg(char* bufferArgPtr, char* charArrayArgPtr);
     bool parseLongArg(char* bufferArgPtr, long* longArgPtr);
     bool parseUnsignedLongArg(char* bufferArgPtr, unsigned long* unsignedLongArgPtr);
+    // bool parseFloatArg(char* bufferArgPtr, long* longArgPtr); // PENDING
 };
 
 #endif
