@@ -566,4 +566,22 @@ namespace TBCommandsParser {
     
     return true;
   }
+
+  bool parseFloatArg(char* bufferArgPtr, float* floatArgPtr){
+
+    if(bufferArgPtr == NULL || *bufferArgPtr == TBCH_ARGUMENT_SEPARATOR) return false;
+
+    // The number shouldn't be negative.
+    if( *bufferArgPtr == '-' ){
+      return false;
+    }
+    if( !isdigit(*bufferArgPtr) ) return false;
+    *floatArgPtr = 0;
+    while( isdigit(*bufferArgPtr) ){
+      *floatArgPtr = *floatArgPtr * 10 + *bufferArgPtr - '0';
+      bufferArgPtr++;  // Move pointer one char forward.
+    };
+    
+    return true;
+  }
 }
